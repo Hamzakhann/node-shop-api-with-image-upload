@@ -1,18 +1,37 @@
 const express = require('express');
+const router = express.Router();
+const mongoose = require('mongoose');
 
-const router = express.Router()
+const Order = require('../models/order');
+
 
 
 router.get('/' , (req , res , next) =>{
-    res.status(200).json({
-        message : 'it for order works'
+    Order.find()
+    .select('product quantity _id')
+    .exec()
+    .then(docs =>{
+        res.status.json(docs)
+    })
+    .catch(err =>{
+        res.status(500).json({error : err})
     })
 })
 
 
 router.post('/' , (req , res , next) =>{
-    res.status(201).json({
-        message : 'order post'
+    const order = new Order({
+        _id : mongoose.Types.ObjectId(),
+        quantity : req.body.quantity,
+        product  : req.body.productId
+    });
+    order
+    .save()
+    .then(result =>{
+        res.status(201).json(result)
+    })
+    .catch(err =>{
+        res.status(500).json({error : err})
     })
 })
 

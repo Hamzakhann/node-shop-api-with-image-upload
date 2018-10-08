@@ -8,11 +8,17 @@ const Product = require('../models/product');
 
 
 router.get('/' , (req , res , next) =>{
-    Product.find().exec()
+    Product.find()
+    .select('name price _id')
+    .exec()
     .then(docs =>{
         if(docs.length > 0){
             console.log(docs)
-            res.status(200).json(docs)    
+            const response = {
+                count : docs.length,
+                products : docs
+            }
+            res.status(200).json(response)    
         }else{
             res.status(500).json({
                 message: 'No entry avail'
@@ -37,8 +43,12 @@ router.post('/' , (req , res , next) =>{
     product.save().then(result =>{
         console.log(result)
         res.status(200).json({
-            message : 'post req',
-            createdPost  : product
+            message : 'Created product successfully',
+            createdProduct  : {
+                name : result.name,
+                price : result.price,
+                _id : result._id
+            }
         })
     }).catch(error =>{
         console.log(error)
@@ -49,6 +59,7 @@ router.post('/' , (req , res , next) =>{
 router.get('/:productId' , (req , res , next) =>{
     const id = req.params.productId;
     Product.findById(id)
+    .select('name , price , _id')
     .exec()
     .then(doc =>{
         comnsole.log(doc)
@@ -65,8 +76,14 @@ router.get('/:productId' , (req , res , next) =>{
 })
 
 router.patch('/:productId' , (req , res , next) =>{
-    res.status(200).json({
-        message : 'patch works'
+    const id = req.params.productId;
+    Product.update({_id : id} , {$set:{name : req.body.newName , price : req.body.newPrice}})
+    .exec()
+    .then(result =>{
+        res.status(200).json(result)
+    })
+    .catch(error =>{
+        res.status(500).json({error: error})
     })
 })
 
@@ -75,7 +92,9 @@ router.delete('/:productId' , (req , res , next) =>{
     const id = req.params.productId;
     Product.remove({_id : id})
     .exec().then(result =>{
-        res.status(200).json(result)
+        res.status(200).json({
+            message : 'Product deleted'
+        })
     }).catch(err =>{
         res.status(500).json({error: err})
     })
