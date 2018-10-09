@@ -1,6 +1,10 @@
 const express = require('express');
 const app = express()
 const morgan = require('morgan')
+
+const multer = require('multer');
+const upload = multer({dest : 'uploads/'})
+
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 
@@ -13,6 +17,7 @@ mongoose.connect('mongodb+srv://hamzakhann:'+ process.env.MONGO_ATLAS_PW + '@clu
 })
 
 app.use(morgan('dev'))
+app.use(express.static('uploads'))
 app.use(bodyParser.urlencoded({extended:false}))
 app.use(bodyParser.json())
 
@@ -25,7 +30,10 @@ app.use((req , res , next) =>{
         return res.status(200).json({})
     }
 })
-
+// app.post('/' ,upload.single('productImage'),(req,res)=>{
+//     console.log(req.file)
+//     res.status(200).json({message:'ok'})
+// })
 app.use( '/products' , productRoutes)
 app.use('/orders' ,  orderRoutes)
 
